@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <link type="text/css" rel="stylesheet" href="dns-screen.css">
+   <title>DNS Management Project</title>
+</head>
+
+<body>
+<!-- see http://www.dyn-web.com/tutorials/iframes/load.php for iframe source -->
+
+<div id="header">
+<span style="float: left;">
+<img src="globe.gif" title="DNS MGMT logo" alt="DNS MGMT logo" height="42" width="46">
+</span>
+&nbsp;&nbsp;
+DNS Management Project - iframe test page
+</div>
+
+
+<div id="content">
+<!--content div -->
+<iframe name="contentifrm" id="contentifrm" src="loremipsum.html" width="100%" height="400px" marginheight="0" frameborder="0">
+Your browser doesn't support iframes.
+</iframe>
+
+</div>
+
+
+<div id="sidebar">
+<!--#include virtual="/cgi-bin/dns-management/navigator.pl" -->
+</div>
+
+
+<div id="footer">
+This page was last modified on:- 
+<!--#flastmod file="dns-mgmt-frontend-iframe.shtml" -->
+</div>
+
+</body>
+</html>

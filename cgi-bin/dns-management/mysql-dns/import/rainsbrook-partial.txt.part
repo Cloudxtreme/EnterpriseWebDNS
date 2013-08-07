@@ -1,0 +1,33 @@
+; Authoritative data for  DN Rainsbrook Wood(ORIGIN assumed rainsbrook.co.uk)
+$TTL 172800
+$ORIGIN rainsbrook.co.uk.
+@               IN      SOA     walnut.rainsbrook.co.uk.        hostmaster.rainsbrook.co.uk. (
+                        2007021903 ; serial use today's date
+                        3600       ; refresh 3 hours
+                        3600       ; retry 1 hour
+                        1209600    ; expire 1000 hours
+                        3600       ; 86400         ; default_ttl 24 hours
+                        )
+
+@               IN      NS      ns0.rainsbrook.co.uk.
+@               IN      NS      ns0.mediahub.co.uk.
+@               IN      NS      ns1.opensourcerers.co.uk.
+
+
+@               IN      TXT     "Rainsbrook Wood, UK"
+@               IN      LOC     52 29 08.0 N 01 52 57.0 W 50m
+
+walnut.rainsbrook.co.uk. IN TXT "v=spf1 a ~all"
+
+rainsbrook.co.uk.       IN      MX      10      walnut.rainsbrook.co.uk.
+
+ns0             IN      A       82.71.89.10
+ns1             IN      A       62.232.4.232
+
+walnut          IN      A       82.71.89.10
+maple           IN      A       82.71.89.13
+
+www             IN      CNAME   walnut
+www2            IN      CNAME   phobos.mediahub.co.uk.
+voip            IN      CNAME   maple
+

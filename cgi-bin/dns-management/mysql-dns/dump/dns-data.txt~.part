@@ -1,0 +1,97 @@
+-- MySQL dump 9.11
+--
+-- Host: localhost    Database: DNS
+-- ------------------------------------------------------
+-- Server version	4.0.20
+
+--
+-- Table structure for table `FORWARDZONE`
+--
+
+DROP TABLE IF EXISTS FORWARDZONE;
+CREATE TABLE FORWARDZONE (
+  octet1 int(11) NOT NULL default '0',
+  octet2 int(11) NOT NULL default '0',
+  octet3 int(11) NOT NULL default '0',
+  octet4 int(11) NOT NULL default '0',
+  hostname char(255) NOT NULL default '',
+  domainsuffix char(255) NOT NULL default '',
+  macaddress char(17) default '',
+  description char(255) NOT NULL default '',
+  username char(10) NOT NULL default '',
+  team char(255) NOT NULL default '',
+  modified timestamp(14) NOT NULL,
+  PRIMARY KEY  (hostname)
+) TYPE=MyISAM;
+
+--
+-- Dumping data for table `FORWARDZONE`
+--
+
+
+/*!40000 ALTER TABLE FORWARDZONE DISABLE KEYS */;
+LOCK TABLES FORWARDZONE WRITE;
+INSERT INTO FORWARDZONE VALUES 
+
+(192,168,1,1,'optiplex','birmingham.gov.uk','aabbccddeeff','optiplex router','andrew','Network Team',20050819221610),
+(192,168,1,2,'planet1','birmingham.gov.uk','aabbccddeeff','planet1 switch','andrew','Network Team',20050819221704),
+(192,168,1,4,'2520','brm.pri','aabbccddeeff','2520 core router, 1 eth, 4 serial, ntp server','andrew','Network Team',20051004220506),
+(192,168,1,11,'8265-01','bham.gov.uk','aabbccddeeff','IBM8265 ATM switch, 8 x oc3, 16x 2MB/s G703.','andrew','Network Team',20051004220937),
+(192,168,1,12,'8265-02','bham.gov.uk','aabbccddeeff','IBM8265 ATM switch, 4 x oc3, 8x 2MB/s G703. MSS v2','andrew','Network Team',20051004221138),
+(192,168,1,14,'cellplex','bham.gov.uk','aabbccddeeff','3Com Cellplex 7000 ATM Switch\r\n2x oc3 fibre, 3x oc3 copper.','andrew','Network Team',20051004221404),
+(192,168,1,41,'pine','birmingham.gov.uk','aabbccddeeff','pine server','andrew','Network Team',20050819221355),
+(192,168,1,101,'test-box','bham.gov.uk','aabbccddeeff','Located in room 101.','andrew','Server Team',20051004222334);
+
+UNLOCK TABLES;
+/*!40000 ALTER TABLE FORWARDZONE ENABLE KEYS */;
+
+--
+-- Table structure for table `TEAMS`
+--
+
+DROP TABLE IF EXISTS TEAMS;
+CREATE TABLE TEAMS (
+  team char(255) NOT NULL default '',
+  teampassword char(255) NOT NULL default ''
+) TYPE=MyISAM;
+
+--
+-- Dumping data for table `TEAMS`
+--
+
+
+/*!40000 ALTER TABLE TEAMS DISABLE KEYS */;
+LOCK TABLES TEAMS WRITE;
+INSERT INTO TEAMS VALUES ('Network Team','network'),('Server Team','server'),('Desktop Team','desktop');
+UNLOCK TABLES;
+/*!40000 ALTER TABLE TEAMS ENABLE KEYS */;
+
+--
+-- Table structure for table `ZONEINFO`
+--
+
+DROP TABLE IF EXISTS ZONEINFO;
+CREATE TABLE ZONEINFO (
+  primarymaster char(20) NOT NULL default '',
+  respperson char(20) NOT NULL default '',
+  serial int(11) NOT NULL default '0',
+  refresh char(6) NOT NULL default '',
+  retry char(5) NOT NULL default '',
+  expire char(7) NOT NULL default '',
+  minimttl char(6) NOT NULL default '',
+  ns1 char(20) NOT NULL default '',
+  ns2 char(20) default NULL,
+  ns3 char(20) default NULL,
+  ns4 char(20) default NULL
+) TYPE=MyISAM;
+
+--
+-- Dumping data for table `ZONEINFO`
+--
+
+
+/*!40000 ALTER TABLE ZONEINFO DISABLE KEYS */;
+LOCK TABLES ZONEINFO WRITE;
+UNLOCK TABLES;
+/*!40000 ALTER TABLE ZONEINFO ENABLE KEYS */;
+

@@ -1,0 +1,11 @@
+select USERS.password, MEMBERS.memberofteam from USERS,MEMBERS where USERS.username='andrew' and MEMBERS.username=USERS.username;
+
++----------+--------------+                                                                                                                                                               
+| password | memberofteam |
++----------+--------------+
+| password | network      |
+| password | security     |
+| password | server       |
++----------+--------------+
+
+
