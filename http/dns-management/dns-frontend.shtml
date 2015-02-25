@@ -15,7 +15,7 @@
 <img src="globe.gif" title="DNS MGMT logo" alt="DNS MGMT logo" height="42" width="46">
 </span>
 &nbsp;&nbsp;
-DNS Management Project - iframe test page
+DNS Management Project
 </div>
 
 
@@ -35,7 +35,7 @@ Your browser doesn't support iframes.
 
 <div id="footer">
 This page was last modified on:- 
-<!--#flastmod file="dns-mgmt-frontend-iframe.shtml" -->
+<!--#flastmod file="dns-frontend.shtml" -->
 </div>
 
 </body>

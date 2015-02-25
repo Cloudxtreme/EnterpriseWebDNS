@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html;charset=ISO-8859-1" />
+
+
+<title>forms.html</title>
+</head>
+
+<body>
+<!--#echo var="DATE_LOCAL" -->
+
+<!--#include virtual="/cgi-bin/dns-management/add-new-A-record-form.pl" -->
+<br>
+<!--#include virtual="/cgi-bin/dns-management/add-new-CNAME-form.pl" -->
+<br>
+<!--#include virtual="/cgi-bin/dns-management/check-ip-A-CNAME-form.pl" -->
+<br>
+<!--#include virtual="/cgi-bin/dns-management/add-domainname-form.pl" -->
+<br>
+
+
+<form name="deletehost" action="/cgi-bin/dns-management/deletehost.pl" method="post" 
+onsubmit="validate();">
+<table border="1" bgcolor="#dddddd">
+<th>Delete host record.</th>
+<tr>
+<td>
+Host name:
+<input type="text" name="host_name" size="20" maxlength="20">.
+<select name="domainsuffix" size="1">
+<option>brm.pri
+<option>birmingham.gov.uk
+<option>bham.gov.uk
+</select>
+<br>
+<select name="team" size="1">
+<option>network
+<option>server
+<option>security
+<option>desktop
+</select>
+Team Password:-
+<input type="password" name="teampasswd" size="10" maxlength="20">
+<br>
+Your username:-
+<input type="text" name="username" size="10" maxlength="10">
+<input type="Submit" value="Delete ip address record">
+</form>
+</td>
+</tr>
+</table>
+<br>
+
+
+
+<br><br>
+
+<form name="addzoneinfo" action="/cgi-bin/dns-management/addzoneinfo.pl" method="post">
+<table border="1" bgcolor="#dddddd">
+<th>Add a new DNS zone (domain name).</th>
+<tr>
+<td>
+Domain name:
+<input type="text" name="domainsuffix" size="20" maxlength="255"><br>
+Primary Master:
+<input type="text" name="primarymaster" size="20" maxlength="20" value="ns0.brm.pri"><br>
+Responsible Person:
+<input type="text" name="respperson" size="20" maxlength="20"><br>
+Serial Number (date+s/n):
+<input type="text" name="serial" size="12" maxlength="12" value="2006020501"><br>
+Refresh:
+<input type="text" name="refresh" size="6" maxlength="6" value="3600"><br>
+Retry:
+<input type="text" name="retry" size="5" maxlength="5" value="3600"><br>
+Expire:
+<input type="text" name="expire" size="7" maxlength="7" value="1209600"><br>
+TTL:
+<input type="text" name="minimttl" size="6" maxlength="6" value="172800"><br>
+Name Servers ( 1 to 4):<br>
+<input type="text" name="ns1" size="20" maxlength="20" value="ns0.brm.pri"><br>
+<input type="text" name="ns2" size="20" maxlength="20" value="ns1.brm.pri"><br>
+<input type="text" name="ns3" size="20" maxlength="20" value="ns2.brm.pri"><br>
+<input type="text" name="ns4" size="20" maxlength="20"><br>
+
+Your username:-
+<input type="text" name="username" size="10" maxlength="10">
+
+<input type="Submit" value="Add new Zone Info">
+
+</td>
+</tr>
+
+
+</table>
+</form>
+
+</body>
+</html>
