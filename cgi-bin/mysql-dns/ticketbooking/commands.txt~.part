@@ -1,0 +1,27 @@
+Commands to set up ticketbooking database
+ 
+mysql> create database TICKETBOOKING;
+
+mysql> use TICKETBOOKING;
+
+mysql> create table EVENTS ( serial int not null auto_increment PRIMARY KEY, eventname char(255) not null, startdate date not null, starttime time not null, eventadmin char(255) not null, eventadminpassword char(255) not null, maxtickets int not null, soldtickets int not null,  reservedtickets int, ticketdesign char(255) );
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> describe EVENTS;
++--------------------+-----------+------+-----+------------+----------------+
+| Field              | Type      | Null | Key | Default    | Extra          |
++--------------------+-----------+------+-----+------------+----------------+
+| serial             | int(11)   |      | PRI | NULL       | auto_increment |
+| eventname          | char(255) |      |     |            |                |
+| startdate          | date      |      |     | 0000-00-00 |                |
+| starttime          | time      |      |     | 00:00:00   |                |
+| eventadmin         | char(255) |      |     |            |                |
+| eventadminpassword | char(255) |      |     |            |                |
+| maxtickets         | int(11)   |      |     | 0          |                |
+| soldtickets        | int(11)   |      |     | 0          |                |
+| reservedtickets    | int(11)   | YES  |     | NULL       |                |
+| ticketdesign       | char(255) | YES  |     | NULL       |                |
++--------------------+-----------+------+-----+------------+----------------+
+10 rows in set (0.09 sec)
+
+

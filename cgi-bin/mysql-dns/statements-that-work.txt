@@ -1,0 +1,121 @@
+log in to mysql as root
+andrew@bookpc:~/mysql-dns$ mysql -u root -p
+Enter password:
+
+mysql> show databases;
++----------+
+| Database |
++----------+
+| DNS      |
+| mysql    |
+| test     |
+| woods    |
++----------+
+4 rows in set (0.15 sec)
+
+
+mysql> use DNS
+Database changed
+mysql> show tables;
++---------------+
+| Tables_in_DNS |
++---------------+
+| PTR           |
++---------------+
+1 row in set (0.04 sec)
+
+mysql> describe ZONEINFO;
++---------------+-----------+------+-----+---------+-------+
+| Field         | Type      | Null | Key | Default | Extra |
++---------------+-----------+------+-----+---------+-------+
+| domainsuffix  | char(255) |      | PRI |         |       |
+| primarymaster | char(20)  |      |     |         |       |
+| respperson    | char(20)  |      |     |         |       |
+| serial        | int(11)   |      |     | 0       |       |
+| refresh       | char(6)   |      |     |         |       |
+| retry         | char(5)   |      |     |         |       |
+| expire        | char(7)   |      |     |         |       |
+| minimttl      | char(6)   |      |     |         |       |
+| ns1           | char(20)  |      |     |         |       |
+| ns2           | char(20)  | YES  |     | NULL    |       |
+| ns3           | char(20)  | YES  |     | NULL    |       |
+| ns4           | char(20)  | YES  |     | NULL    |       |
++---------------+-----------+------+-----+---------+-------+
+
+
+mysql> source insert.sql;
+ERROR 1062: Duplicate entry '192.168.1.41' for key 1
+Query OK, 1 row affected (0.00 sec)
+
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select * from PTR;
++---------------+---------------+-------------------+------------+----------+----------------+
+| ipaddress     | host          | description       | department | username | modified       |
++---------------+---------------+-------------------+------------+----------+----------------+
+| 192.168.1.1   | optiplex      | Optiplex Router   | ITservices | Andrew   | 20050622001313 |
+| 192.168.1.2   | core-switch   | Planet GE switch  | ITservices | Andrew   | 20050622001427 |
+| 192.168.1.3   | core-switch-2 | Planet GE switch  | ITservices | Andrew   | 20050622001825 |
+| 192.168.1.4   | 2520          | Cisco 2520        | Housing    | Andrew   | 20050622001825 |
+| 192.168.1.41  | pine          | Pine Linux server | ServerTeam | Gordon   | 20050622001825 |
+| 192.168.1.105 | g3-laptop     | Apple Laptop      | Me         | Andrew   | 20050626184642 |
+| 192.168.1.11  | 8565          | atm switch        | ServerTeam | Gordon   | 20050626184642 |
++---------------+---------------+-------------------+------------+----------+----------------+
+7 rows in set (0.09 sec)
+
+mysql> select * from PTR where department = 'Me';
++---------------+-----------+--------------+------------+----------+----------------+
+| ipaddress     | host      | description  | department | username | modified       |
++---------------+-----------+--------------+------------+----------+----------------+
+| 192.168.1.105 | g3-laptop | Apple Laptop | Me         | Andrew   | 20050626184642 |
++---------------+-----------+--------------+------------+----------+----------------+
+1 row in set (0.03 sec)
+
+mysql> select ipaddress from PTR where department = 'Me';
++---------------+
+| ipaddress     |
++---------------+
+| 192.168.1.105 |
++---------------+
+1 row in set (0.00 sec)
+
+mysql> select host from PTR where department = 'Me';
++-----------+
+| host      |
++-----------+
+| g3-laptop |
++-----------+
+1 row in set (0.00 sec)
+
+mysql> select ipaddress,modified from PTR where department = 'Me';
++---------------+----------------+
+| ipaddress     | modified       |
++---------------+----------------+
+| 192.168.1.105 | 20050626184642 |
++---------------+----------------+
+1 row in set (0.01 sec)
+
+
+
+
+
+Update column primary key
+=========================
+
+
+mysql> alter table DELETEDFORWARDZONE add column id int;
+Query OK, 0 rows affected (0.20 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> alter table DELETEDFORWARDZONE drop primary key ;
+Query OK, 0 rows affected (0.16 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> 
+mysql> alter table DELETEDFORWARDZONE add primary key (id);
+Query OK, 0 rows affected (0.23 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql>
+
+

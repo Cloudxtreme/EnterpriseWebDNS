@@ -1,0 +1,77 @@
+Commands to set up ticketbooking database
+ 
+mysql> create database TICKETBOOKING;
+
+mysql> use TICKETBOOKING;
+
+mysql> create table EVENTS ( serial int not null auto_increment PRIMARY KEY, eventname char(255) not null, startdate date not null, starttime time not null, eventadmin char(255) not null, eventadminpassword char(255) not null, maxtickets int not null, soldtickets int not null,  reservedtickets int, ticketdesign char(255) );
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> describe EVENTS;
++--------------------+-----------+------+-----+------------+----------------+
+| Field              | Type      | Null | Key | Default    | Extra          |
++--------------------+-----------+------+-----+------------+----------------+
+| serial             | int(11)   |      | PRI | NULL       | auto_increment |
+| eventname          | char(255) |      |     |            |                |
+| startdate          | date      |      |     | 0000-00-00 |                |
+| starttime          | time      |      |     | 00:00:00   |                |
+| eventadmin         | char(255) |      |     |            |                |
+| eventadminpassword | char(255) |      |     |            |                |
+| maxtickets         | int(11)   |      |     | 0          |                |
+| soldtickets        | int(11)   |      |     | 0          |                |
+| reservedtickets    | int(11)   | YES  |     | NULL       |                |
+| ticketdesign       | char(255) | YES  |     | NULL       |                |
++--------------------+-----------+------+-----+------------+----------------+
+10 rows in set (0.09 sec)
+
+
+User ticketbooking
+pw letmein99
+mysql> grant all privileges on TICKETBOOKING.* to ticketbooking@"localhost" identified by 'letmein99';
+ERROR 2006 (HY000): MySQL server has gone away
+No connection. Trying to reconnect...
+Connection id:    3
+Current database: TICKETBOOKING
+
+Query OK, 0 rows affected (1.49 sec)
+
+mysql>
+
+[root@walnut] /opt/bin ->mysql -u ticketbooking -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 5 to server version: 4.1.16
+
+
+mysql> use TICKETBOOKING;
+Database changed
+mysql> source insert-event.sql;
+Query OK, 1 row affected (0.03 sec)
+
+
+
+insert-event.sql:-
+
+insert into EVENTS (
+eventname,
+startdate,
+starttime,
+eventadmin,
+eventadminpassword,
+maxtickets,
+soldtickets,
+reservedtickets,
+ticketdesign
+)
+
+values (
+'Salem Concert 07',
+'2007-05-21',
+'19:00:00',
+'admin',
+'letmein',
+'100',
+'0',
+'0',
+'salem-07.xml'
+);

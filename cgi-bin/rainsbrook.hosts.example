@@ -1,0 +1,81 @@
+; Authoritative data for  DN Rainsbrook Wood(ORIGIN assumed rainsbrook.co.uk)
+$TTL 172800
+$ORIGIN rainsbrook.co.uk.
+@               IN      SOA     phobos.mediahub.co.uk.  root.mediahub.co.uk. (
+                        2006020501 ; serial use today's date
+                        3600       ; refresh 3 hours
+                        3600       ; retry 1 hour
+                        1209600    ; expire 1000 hours
+                        3600       ; 86400         ; default_ttl 24 hours
+                        )
+
+@               IN      NS      192.168.1.1
+
+@               IN      TXT     "Rainsbrook Wood, UK"
+@               IN      LOC     52 29 08.0 N 01 52 57.0 W 50m
+
+                IN      MX      10      walnut.rainsbrook.co.uk.
+
+walnut          IN      A       192.168.5.11
+
+optiplex        IN      A       192.168.1.1
+coreswitch      IN      A       192.168.1.2
+gigabitswitch   IN      A       192.168.1.3
+2520            IN      A       192.168.1.4
+corerouter      IN      CNAME   2520
+
+maple           IN      A       192.168.1.8
+voip            IN      CNAME   maple
+internetswitch  IN      A       192.168.1.9
+smoothwall      IN      A       192.168.1.10
+smoothwall-eth0 IN      CNAME   smoothwall
+smoothwall-eth1 IN      A       82.71.89.9
+smoothwall-eth2 IN      A       192.168.5.1
+
+smoothwall-red  IN      CNAME   smoothwall-eth1
+smoothwall-orange       IN      CNAME   smoothwall-eth2
+proxy           IN      CNAME   smoothwall
+
+ibm8265-01      IN      A       192.168.1.11
+ibm8265-02      IN      A       192.168.1.12
+ibm8210-02      IN      A       192.168.1.13
+cellplex        IN      A       192.168.1.14
+asx200          IN      A       192.168.1.15
+ibm2210         IN      A       192.168.1.16
+
+ibm8271-01      IN      A       192.168.1.21
+ibm8271-02      IN      A       192.168.1.22
+ibm8271-03      IN      A       192.168.1.23
+
+pine            IN      A       192.168.1.41
+
+ames312         IN      A       192.168.1.45
+ames411         IN      A       192.168.1.46
+nw5             IN      A       192.168.1.47
+
+oak             IN      A       192.168.1.51
+
+origin200-1     IN      A       192.168.1.53
+origin200-2     IN      A       192.168.1.54
+
+hp-lj6          IN      A       192.168.1.61
+lj6             IN      CNAME   hp-lj6
+
+indy            IN      A       192.168.1.101
+sparc20         IN      A       192.168.1.102
+g3laptop        IN      A       192.168.1.105
+
+iarrcis         IN      A       192.168.1.110
+bookpc          IN      A       192.168.1.111
+bookpc-vm       IN      A       192.168.1.112
+o2              IN      A       192.168.1.113
+
+
+www             IN      CNAME   walnut
+mail            IN      CNAME   walnut
+www2            IN      CNAME   optiplex
+intranet        IN      CNAME   optiplex
+
+1720-adsl       IN      A       82.71.89.14
+
+

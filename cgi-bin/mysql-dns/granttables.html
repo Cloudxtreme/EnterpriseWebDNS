@@ -1,0 +1,521 @@
+	<html>
+	<head><title>DevShed.com</title></head>
+	<body bgcolor=#ffffff>
+	<center>
+	<table border=0 cellpadding=0 cellspacing=0>
+	<tr><td><a href=http://www.devshed.com><img src=http://images.devshed.com/devprint.gif width=120 height=60 border=0 alt="DevShed.com"></a></td><td width=25>&nbsp;</td><td>
+            <!--<IFRAME WIDTH=468 HEIGHT=60 NORESIZE SCROLLING=No FRAMEBORDER=0 MARGINHEIGHT=0 MARGINWIDTH=0 SRC="http://adforce.imgis.com/?adiframe|2.0|34|24195|1|1|MISC=964532405;">
+                <script language=javascript src="http://adforce.imgis.com/?addyn|2.0|34|24195|1|1|MISC=964532405;loc=700;"></script>
+                <noscript>-->
+                <a href="http://adforce.imgis.com/?adlink|2.0|34|24195|1|1|MISC=964532405;loc=300;" target=_top>
+                <img src="http://adforce.imgis.com/?adserv|2.0|34|24195|1|1|MISC=964532405;loc=300;" border=0 width=468 height=60></a>
+                <!--</noscript>
+                </IFRAME>-->
+	</td></tr>
+	</table><br></center>
+<font face=Arial,Helvetica size=+2><b>The MySQL Grant Tables</b></font><br>
+<font face=Arial,Helvetica size=-1>By <a href=mailto:gilmore@cob.ohio-state.edu>W.J. Gilmore</a></font><br>
+<font face=Arial,Helvetica size=-1>March 01, 1999</font><br><br>
+<font face=Arial,Helvetica size=-1>Printed from DevShed.com<br>URL: http://www.devshed.com/Server_Side/MySQL/Grant_Tables/</font><br><br>
+<font face=Arial,Helvetica><b>Introduction</b><br><font face=Arial,Helvetica size=-1>One of the most powerful aspects of the MySQL server (<A HREF="http://www.mysql.com">http://www.mysql.com</A>) is the amazing amount of control the administrator has over each user's intended behavior. This control can restrict user privileges over a general part of the server, such as limited access to an entire database, but can also be as specific as limiting privileges for a specific table or even column. This article will serve to explain the process in which the MySQL server grants/revokes these user privileges, highlighting in particular the newest additions to the MySQL privilege system, the <B>tables_priv</B> and <B>columns_priv</B> tables. Please keep in mind that the GRANT/REVOKE commands detailed later in this article are only relevant to MySQL version 3.22.11 and up. These commands are irrelevant to any previous version.<br>
+<br>
+The MySQL privilege system is controlled within the MySQL database. There are currently 5 tables that provide this control; the <B>user</B>, <B>db</B>, <B>host</B>, <B>tables_priv</B> and <B>columns_priv</B> tables. These tables all vary slightly in purpose, yet all serve the same function which is to verify that the user is doing what the user is allowed to do. Each table can be broken down into two categories of fields: scope fields and privilege fields. The scope fields identify a host, user or database. The privilege fields determine which actions can be performed in reference to that host, user or database. Let's take a brief look at each table's function:<br>
+<br>
+<UL>
+<LI><B>user</B> - Determines whether or not the connecting user is allowed to connect to the server. Assuming the connection is allowable, the privilege fields contain the user's global privileges.
+<LI><B>db</B> - Determines which users can access which databases from which hosts. The privilege contained within the db table apply to the database identified within this table.
+<LI><B>host</B> - The host table is used when you want to extend an entry within the db table's range. For example, if a certain db is to be accessed by more than one host, then the superuser would leave the host column empty within the db table and fill the host table with all of the necessary hostnames.
+<LI><B>tables_priv</B> - In principle works just like the db table, except that it is used for tables instead of databases. This table also contains one other field category (Other) in which a timestamp and grantor column is stored.The tables_priv table will be explained in further detail later in this article.
+<LI><B>columns_priv</B> - Works just like the db and tables_priv tables, except that it provides access privileges for certain columns of certain tables. This table also contains one other field category (Other) in which a timestamp column is stored. The columns_priv table will be explained in further detail later in this article.
+</UL>
+<br>
+Let's move on to an explantion of MySQL's user-authorization procedure.<br>
+<br>
+Part 1: The MySQL Access Control Process.<br>
+How do the MySQL Grant tables work anyway?<br>
+<br>
+Part 2: The <B>tables_priv</B> and <B>columns_priv</B> grant tables.<br>
+An explanation and several examples relating to MySQL's tables_priv table.<br>
+<br>
+Part 3: References<br>
+An explanation and several examples relating to MySQL's columns_priv grant table.<br></font><br><br><font face=Arial,Helvetica><b>Access Control</b><br><font face=Arial,Helvetica size=-1>The process in which the MySQL server controls user privileges, although seemingly daunting at first look, is actually a fairly simple, although secure, procedure. Let's take a look at some not-so-obvious properties of this process before working through an example.<P>
+
+<B>Property#1:</B><BR>
+The tables can be looked at as a sort of filter which works from most general to most specific.  This filter, (working from general to specific), is as follows:
+	<UL>
+	<LI>User table.
+	<LI>Db Table
+	<LI>Host Table
+	<LI>Tables_priv Table
+	<LI>Columns_priv Table
+	</UL>
+
+<P>
+<B>Property#2:</B><BR>
+Once a server-connection is made, there are two kinds of requests that a user can make:
+	<UL>
+	<LI>Administrative Request (shutdown, reload, process, etc...)
+	<LI>Database-related Request (insert, delete, alter, update, etc...)
+	</UL>
+<P>
+When a user makes an administrative request, the server only has to look in one specific location: the <B>user</B> table. This is because the <B>user</B> table is the only table containing privileges related to administrative processes. However, when the user makes a database request, the process is a slight bit more complicated.
+<P>
+You may have noticed that the grant tables are somewhat redundant (i.e. A 'select' privilege within the <B>user</B> table, and the same privilege repeated within the <B>host</B> and <B>user</B> tables); This is not without reason. One could consider the database-related privileges within the <B>user</B> table as global. That is, the privileges granted to the user within this table are good for <B>every</B> database on the server. These privileges could be considered superuser privileges. On the other hand, the database-related privileges contained within the <B>host</B> and <B>db</B> tables are specifically related to the host or database in question. Thus it would be a wise decision to leave all privileges within this table as 'N'.
+<P>
+Regardless of you decide to set the <B>user</B> table, please take note of the following example. Let's assume our <B>user</B> and <B>db</B> tables are as follows:
+<P>
+
+<DIV align="center"><TABLE cellpadding = 0 cellspacing = 0 border = 0 width="340">
+
+	<TR>
+	<TD valign=TOP>
+
+		<TABLE cellpadding = 2 cellspacing = 2 border = 0 bgcolor=#004040>
+		<TR>
+		<TD colspan=2 align=middle>
+		<FONT FACE = "ARIAL, TIMES, SANS-SERIF" SIZE = "-1" color="white">User Table</FONT>
+		</TD>
+		</TR>
+
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Host
+		</TD>		
+		<TD valign = TOP>
+			%.pi.com
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			User
+		</TD>
+		<TD valign = TOP>
+			wj
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Password
+		</TD>
+		<TD valign = TOP>
+			34ghyT
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Select_priv
+		</TD>
+		<TD valign = TOP>
+		'N'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Insert_priv
+		</TD>
+		<TD valign = TOP>
+		'Y'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Update_priv
+		</TD>
+		<TD valign = TOP>
+		'N'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Delete_priv
+		</TD>
+		<TD valign = TOP>
+		'N'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Index_priv
+		</TD>
+		<TD valign = TOP>
+		'N'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Alter_priv
+		</TD>
+		<TD valign = TOP>
+		'N'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Create_priv
+		</TD>
+		<TD valign = TOP>
+		'N'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Drop_priv
+		</TD>
+		<TD valign = TOP>
+		'N'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Grant_priv
+		</TD>
+		<TD valign = TOP>
+		'N'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Reload_priv
+		</TD>
+		<TD valign = TOP>
+		'N'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Shutdown_priv
+		</TD>
+		<TD valign = TOP>
+		'N'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Process_priv
+		</TD>
+		<TD valign = TOP>
+		'N'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			File_priv
+		</TD>
+		<TD valign = TOP>
+		'N'
+		</TD>
+		</TR>
+		</TABLE>
+
+	</TD>
+	<TD WIDTH=15>&nbsp;</TD>
+
+	<TD VALIGN=TOP>
+		<TABLE cellpadding = 2 cellspacing = 2 border = 0 bgcolor=#004040>
+		<TR>
+		<TD colspan=2 align=middle>
+		<FONT FACE = "ARIAL, TIMES, SANS-SERIF" SIZE = "-1" color="white">Db Table</FONT>
+		</TD>
+		</TR>
+
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Host
+		</TD>		
+		<TD valign = TOP>
+			%.pi.com
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Db
+		</TD>
+		<TD valign = TOP>
+			oats
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			User
+		</TD>
+		<TD valign = TOP>
+			wj
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Select_priv
+		</TD>
+		<TD valign = TOP>
+		'Y'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Insert_priv
+		</TD>
+		<TD valign = TOP>
+		'Y'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Update_priv
+		</TD>
+		<TD valign = TOP>
+		'Y'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Delete_priv
+		</TD>
+		<TD valign = TOP>
+		'N'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Index_priv
+		</TD>
+		<TD valign = TOP>
+		'N'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Alter_priv
+		</TD>
+		<TD valign = TOP>
+		'N'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Create_priv
+		</TD>
+		<TD valign = TOP>
+		'N'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Drop_priv
+		</TD>
+		<TD valign = TOP>
+		'N'
+		</TD>
+		</TR>
+		<TR  bgcolor=#beba9e>
+		<TD valign = TOP>
+			Grant_priv
+		</TD>
+		<TD valign = TOP>
+		'Y'
+		</TD>
+		</TR>
+
+		</TABLE>
+
+	</TD>
+	</TR>
+	</TABLE></DIV>
+<P>
+<B>Scenario #1:</B> Failed Connection Attempt<BR>
+<OL>
+<LI>User 'alessia' connection attempt failed. - Host, User and/or password does not match up with those contained within the <B>user</B> table. User is denied access.
+</OL>
+
+<P>
+<B>Scenario #2:</B> 'N' db-privilege in <B>user</B> table, 'Y' db-privilege in <B>db</B> table.<BR>
+<OL>
+<LI>User 'wj' connection attempt successful.
+<LI>User 'wj' attempts to perform a 'Select' command on the 'oats' database.
+<LI>Server looks towards the <B>user</B> table. There is a 'N' (denied) entry for the 'Select' command.
+<LI>Server then looks toward the <B>db</B> table. There is a 'Y' (allowed) entry for the 'Select' command.
+<LI>Request is successful, because there is a 'Y' within the SELECT column of the user's db table insertion.
+</OL>
+
+<P>
+<B>Scenario #3:</B> 'Y' db-privilege in <B>user</B> table, 'N' db-privilege in <B>db</B> table.<BR>
+<OL>
+<LI>User 'wj' connection attempt successful.
+<LI>User 'wj' attempts to perform a 'Select' command on the 'oats' database.
+<LI>Server looks towards the <B>user</B> table. There is a 'Y' (allowed) entry for the 'Select' command. Since the privileges granted within the <B>user</B> table are global, the request is successfully carried out.
+</OL>
+<P>
+
+<P>
+<B>Scenario #4:</B> 'N' db-privilege in <B>user</B> table, 'N' db-privilege in <B>db</B> table.<BR>
+<OL>
+<LI>User 'wj' connection attempt successful.
+<LI>User 'wj' attempts to perform a 'Select' command on the 'oats' database.
+<LI>Server looks towards the <B>user</B> table. There is a 'N' (denied) entry for the 'Select' command. 
+<LI>Server now looks towards the <B>db</B> table. There is a 'N' (denied= entry for the 'Select' command.
+<LI>Server now looks towards the <B>tables_priv</B> and <B>columns_priv</B> tables. If the privileges are in accordance with the user's request, access is granted. Otherwise, access is denied.
+</OL>
+The <B>tables_priv</B>and <B>columns_priv</B> tables are discussed in further detail later on in this article.
+<P>
+
+<B>Scenario #5:</B> Let's assume the following is true:
+<UL>
+<LI>The 'host' column for user'wj' is '%' within the user table.
+<LI>the 'host' column for user 'wj' was blank within the db table. 
+</UL>
+What happens?<BR>
+
+<OL>
+<LI>User 'wj' connection via a given host is attempted.
+<LI>Assuming the password is correct, the attempt is successful, because the user table states that <B>any</B> ('%') host can connect if the connection is via username 'wj' and the given password.
+<LI>The MySQL server looks to the <B>db</B> table. However, there is no host given.
+<LI>The MySQL server now looks to the <B>host</B> table. IF the db in which the user is connecting to is listed within the host table along with the particular host name that the user is connecting from, then the user is free to carry out commands in accordance with the privileges listed within the <B>host</B> table. If the db/host are not in accordance with those in which the user is connecting from, the user cannot carry out commands and is in essence denied of connection.
+</OL>
+<P>
+The above scenarios should give the reader at least a bit of insight into the privilege system. We will now move on to the latest additions to the privilege system, the <B>tables_priv</B> and <B>columns_priv</B> tables.
+<P></font><br><br><font face=Arial,Helvetica><b>Tables_priv and columns_priv</b><br><font face=Arial,Helvetica size=-1>The <B>tables_priv</B> and <B>columns_priv</B> grant tables is two of the more recent additions to the MySQL database server. They are intended to provide the user with even greater control over the user's actions while connected to the server. Both are very similar to the <B>db</B> grant table, but with an even more specified range of purpose; a given table contained within a given database. Whereas the superuser could previously limit a user's actions within a database via the <B>db</B> grant table, the superuser can now limit a user's actions on a per-table basis and per-column basis. Understandably, this provides the superuser with a very flexible array of options to work with.
+<P>
+Before we look further into each table, please read carefully the following characteristics:
+<P>
+<UL>
+<LI>Wildcards are permitted within the host field of both tables, but are not permitted within the Db, Table_name and Column_name fields.
+<LI>Both tables are sorted similarly to the db table, but is much easier since only the host column can hold wildcards.
+<LI>The privilege fields are declared as 'SET' fields.
+<LI>The <B>tables_priv</B> and <B>columns_priv</B> tables should ONLY be modified via GRANT/REVOKE commands. Attempts to insert data into these tables using 'INSERT' commands will result in a problematic server!
+<LI>The table_priv column within the tables_priv table allows the following: 'Select', 'Insert', 'Update', 'Delete', 'Create', 'Drop', 'Grant', 'References', 'Index', 'Alter'.
+<LI>The column_priv column within the tables_priv table allows the following: 'Select', 'Insert', 'Update', 'References'.
+<LI>The type column within the columns_priv table allows the following: 'Select', 'Insert', 'Update', 'References'.
+</UL>
+<P>
+Note:
+<UL>
+	<LI>'References' is not yet implemented.
+	<LI>'usage' simply means a user with no privileges.
+</UL>
+
+<H4>The tables_priv grant table</H4>
+<P>
+The following is a diagram of the <B>tables_priv</B> table:<BR><BR>
+
+<DIV align="center"><TABLE BORDER = 0 cellspacing=1 cellpadding = 2 bgcolor= brown  NOSAVE >
+<TR><TD><FONT FACE = "ARIAL, TIMES, SANS-SERIF" SIZE = "-1" color="white"><STRONG>Table name: </STRONG> </FONT></TD><TD> <FONT FACE = "ARIAL, TIMES, SANS-SERIF" SIZE = "-1" color="white">tables_priv</FONT> </TD><TD> <FONT FACE = "ARIAL, TIMES, SANS-SERIF" SIZE = "-1" color="white">columns_priv</FONT></TD>
+
+</TR NOSAVE>
+<TR><TD><FONT FACE = "ARIAL, TIMES, SANS-SERIF" SIZE = "-1" color="white"><STRONG>Scope fields:</STRONG></FONT> </TD><TD bgcolor=#beba9e> Host </TD><TD bgcolor=#beba9e> Host
+</TR NOSAVE>
+<TR><TD></TD><TD  bgcolor=#beba9e> Db </TD><TD bgcolor=#beba9e>Db
+</TR NOSAVE>
+<TR><TD></TD><TD  bgcolor=#beba9e> User </TD><TD bgcolor=#beba9e> User
+</TR NOSAVE>
+<TR><TD></TD><TD  bgcolor=#beba9e> Table_name </TD><TD bgcolor=#beba9e> Table_name
+</TR NOSAVE>
+<TR><TD></TD><TD> </TD><TD bgcolor=#beba9e> Column_name
+
+</TR NOSAVE>
+<TR><TD><FONT FACE = "ARIAL, TIMES, SANS-SERIF" SIZE = "-1" color="white"><STRONG>Privilege fields:</STRONG></FONT> </TD><TD bgcolor=#beba9e> Table_priv </TD><TD bgcolor=#beba9e> Type
+</TR NOSAVE>
+<TR><TD></TD><TD bgcolor=#beba9e> Column_priv </TD><TD>
+
+</TR NOSAVE>
+<TR><TD><FONT FACE = "ARIAL, TIMES, SANS-SERIF" SIZE = "-1" color="white"><STRONG>Other fields:</STRONG></FONT> </TD><TD bgcolor=#beba9e> Timestamp </TD><TD bgcolor=#beba9e> Timestamp
+</TR NOSAVE>
+<TR><TD></TD><TD bgcolor=#beba9e> Grantor </TD><TD>
+</TR>
+</TABLE></DIV>
+<BR>
+<BR>
+<BR>
+
+
+
+<P>
+Column definitions:
+<P>
+<UL>
+<LI><B>Host</B> - For what host does this apply?
+<LI><B>Db</B> - For what db connected from the above host does this apply?
+<LI><B>User</B> - For what user from the above host does this apply?
+<LI><B>Table_name</B> - For which table within the above Db does this apply?
+<LI><B>Table_priv</B> - What privileges are allowed for this table?
+<LI><B>Column_priv</B> - What privileges are allowed for the columns contained within this table?
+<LI><B>Timestamp</B> - When was this privilege granted?
+<LI><B>Grantor</B> - Who granted the 'User' this privilege?
+</UL>
+
+<P>
+
+Perhaps the only way to truly understand how the tables_priv table is used is through examples. Let's take a look at a few of them.
+<P>
+Example #1:
+<blockquote><PRE>
+<hr noshade size=1 color=#cccccc><font color=#008000>%></font>GRANT SELECT ON italy TO wj@314interactive.com;<hr noshade size=1 color=#cccccc>
+</PRE></blockquote>
+<P>
+<B>What does this accomplish?</B><BR>
+The above command allows user 'wj' from host '314interactive.com' to perform a 'SELECT' statement on the table 'italy'. Remember that this table would be referred to only if there was a 'N' within the 'SELECT' column of the 'db' or 'host' table regarding the given database/host and given username. If there was a 'Y' within the 'SELECT' column of the 'db' or 'host' table regarding the given database/host and given username, then there would be no need to control the tables_priv table.
+<P>
+
+Example #2:
+<blockquote><PRE>
+<hr noshade size=1 color=#cccccc><font color=#008000>%></font>GRANT SELECT, INSERT ON oats.italy TO wj@314interactive.com;<hr noshade size=1 color=#cccccc>
+</PRE></blockquote>
+<P>
+<B>What does this accomplish?</B><BR>
+The above command allows user 'wj' from host '314interactive.com' to perform 'SELECT' and 'INSERT' statements on the table 'italy' residing within the 'oats' database.
+<P>
+Example #3:<P>
+<blockquote><PRE>
+<hr noshade size=1 color=#cccccc><font color=#008000>%></font>REVOKE SELECT on oats.italy from wj@314interactive.com<hr noshade size=1 color=#cccccc>
+</PRE></blockquote>
+<P>
+<B>What does this accomplish?</B><BR>
+The above command revokes 'SELECT' privileges from user 'wj' from host '314interactive.com' pertaining to the table 'italy' contained within the database 'oats'.
+<P>
+It is important to understand that the information contained within the <B>tables_priv</B> only comes into effect when the host/db tables deny the user the necessary privileges to perform the requested function. If the given privilege were 'Y' within the host/db table, then there would be no need to even look at the tables_priv table.
+<P>
+Example #4: ( A slight bit more complicated)<P>
+<blockquote><PRE>
+<hr noshade size=1 color=#cccccc><font color=#008000>%></font>GRANT SELECT(id,name,address,phone),update(address,phone) ON
+company.customers TO gilmore@314interactive.com;<hr noshade size=1 color=#cccccc>
+</PRE></blockquote>
+<P>
+<B>What does this accomplish?</B><BR>
+The above command grants SELECT privileges for the 'id', 'name', 'address', and 'phone' columns, and UPDATE privileges for the 'address' and 'phone' columns within the 'customers' table, contained within the 'company' database.<BR>
+<B>What does this affect?</B><BR>
+This command modifies both the <B>tables_priv</B> table and the <B>columns_priv</B> tables. This is because it refers to both the table and specific columns residing within the table.
+<P>
+Example #5:<P>
+<blockquote><PRE>
+<hr noshade size=1 color=#cccccc><font color=#008000>%></font>REVOKE UPDATE(address,phone) ON company.customers FROM gilmore@314interactive.com;<hr noshade size=1 color=#cccccc>
+</PRE></blockquote>
+<P>
+<B>What does this accomplish?</B><BR>
+This revokes UPDATE privileges for the address and phone columns contained within the 'customers' table residing within the company database.
+<BR>
+<B>What does this affect?</B><BR>
+Since the command makes direct references to the columns contained within the given table, the <B>columns_priv</B> table is updated as well as the <B>tables_priv</B> table.
+<P>
+Although stated previously within this article, it is of enough importance that it should be repeated; Grant tables are only used <B>if</B> needed. For example, if the table of higher precedence provides adequate privileges, than the lower table precedences will not be consulted. If the higher-precedence table contains 'N' within the requested command, then the lower-precedence table will be consulted. Simple as that.
+<p>
+<b>Note from Monty:</b> GRANT will create
+a new user if the user didn't exist for before and that one can add a
+password for a new user with the IDENTFIED BY 'password' syntax.
+<P>
+I have compiled a short list of references pertaining to the MySQL grant tables on the following page. Please feel free to review each.</font><br><br><font face=Arial,Helvetica><b>References</b><br><font face=Arial,Helvetica size=-1>Perhaps the most important MySQL resource out there is the MySQL documentation. The latest version can be found <A HREF="http://www.mysql.com/Manual_chapter/manual_toc.html">here</A>.
+<P>
+The MySQL mailing-list archive can be found at: <A HREF="http://www.listquest.com/computers/databases/">ListQuest</A>.
+
+<P>
+
+<B>Devshed</B> provides a series of MySQL articles:<P>
+<A HREF="http://www.devshed.com/Server_Side/MySQL/Intro/"><I>Beginning MySQL Tutorial</I> - Introduction to MySQL</I></A><BR><BR>
+<A HREF="http://www.devshed.com/Server_Side/MySQL/Administration/"><I>MySQL Administration Introduction</I> - Introduction to configuration and administration of the MySQL server.</A><BR><BR>
+<A HREF="http://www.devshed.com/Server_Side/PHP/Introduction/"><I>PHP and Web Database Introduction</I> - Introduction to PHP and web database interfacing with MySQL.</A><BR><BR><BR>
+<A HREF="http://www.314interactive.com/io/index.php3">Ionline</A> is also a highly trafficked MySQL resource site, containing articles, tutorials, scripts, sites and more.
+
+<P>
+
+If you have any questions/comments regarding this article, feel free to contact me at <A HREF="mailto:wj@314interactive.com">wj@314interactive.com</A>.</font><br><br><br><div align=right><font face=Verdana,Arial,Helvetica size=-2 color=#aaaaaa>
+		Copyright &copy; 1997-99 <a href=http://www.ngenuity.com/ class=footer>ngenuity</a>. All rights reserved.</center></div>
+</font>
+</body>
+</html>
