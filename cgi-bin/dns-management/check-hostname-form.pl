@@ -15,7 +15,7 @@ use Data::Dumper;
 require "globalconfig.pl";
 our ($mysqluser, $mysqlpw);
 
-my $dbh = DBI->connect('DBI:mysql:DNS',"$mysqluser","$mysqlpw") or die $DBI::errstr ;
+my $dbh = DBI->connect('DBI:mysql:DNS;mysql_socket=/data/db/mysql/mysql.sock',"$mysqluser","$mysqlpw") or die $DBI::errstr ;
 
 my $sql ;
 my $sth ;
@@ -48,10 +48,36 @@ print "Content-type: text/html\n\n";
 print <<ENDOFTEXT2 ;
 <table id="table">
 
+
+<table id="table">
+<th>Check ip address</th>
+<tr>
+<td>
+<form name="checkipaddress" action="/cgi-bin/dns-management/checkipaddress.pl" method="post" onsubmit="validate();">
+IP address:
+<input type="text" name="octet1" size="3" maxlength="3"><b>.</b>
+<input type="text" name="octet2" size="3" maxlength="3"><b>.</b>
+<input type="text" name="octet3" size="3" maxlength="3"><b>.</b>
+<input type="text" name="octet4" size="3" maxlength="3">
+</td>
+</tr>
+
+<tr>
+<td>
+<input type="Submit" value="Check Ip Address">
+</form>
+</td>
+</tr>
+
+<tr><td>&nbsp;</td></tr>
+
+
+
+
 <th>Check hostname</th>
 <tr>
 <td>
-<form name="checkhostname" action="/cgi-bin/dns-management/checkhostname.pl" method="post" onsubmit="validate();">
+<form name="searchhostname" action="/cgi-bin/dns-management/checkhostname.pl" method="post" onsubmit="validate();">
 Hostname:
 <input type="text" name="host_name" size="20" maxlength="20">.
 <select name="domainsuffix" size="1">
@@ -69,8 +95,40 @@ print <<ENDOFTEXT3 ;
 </form>
 </td>
 </tr>
+
+
+
+
+<th>Search hostname</th>
+<tr>
+<td>
+<form name="checkhostname" action="/cgi-bin/dns-management/searchhostname.pl" method="post" onsubmit="validate();">
+Hostname:
+<input type="text" name="host_name" size="20" maxlength="20">
+
+<!-- As we seaarch across all hostnames, no need to give a domain to seaarch. Code left in for future use.
+<b>.</b>
+<select name="domainsuffix" size="1">
+ENDOFTEXT3
+$printcount = 0 ;
+
+foreach (@domainname)
+        {
+        print "<option>$domainname[$printcount]</option> \n";
+        $printcount ++ 
+        }
+print <<ENDOFTEXT4 ;
+</select>
+-->
+
+
+<br>
+<input type="Submit" value="Search Hostname">
+</form>
+</td>
+</tr>
 </table>
 
-ENDOFTEXT3
+ENDOFTEXT4
 
 exit (0);

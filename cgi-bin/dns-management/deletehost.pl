@@ -19,7 +19,7 @@ sub DOSQL
 #get sql query passed to sub
 my $sql = shift ;
 #connect to db
-my $dbh = DBI->connect('DBI:mysql:DNS','root','117shinzu');
+my $dbh = DBI->connect('DBI:mysql:DNS;mysql_socket=/data/db/mysql/mysql.sock','root','117shinzu');
 #prepare query
 my $sth = $dbh->prepare($sql);
 #run query

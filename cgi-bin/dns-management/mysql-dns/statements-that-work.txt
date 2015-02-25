@@ -96,3 +96,26 @@ mysql> select ipaddress,modified from PTR where department = 'Me';
 1 row in set (0.01 sec)
 
 
+
+
+
+Update column primary key
+=========================
+
+
+mysql> alter table DELETEDFORWARDZONE add column id int;
+Query OK, 0 rows affected (0.20 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> alter table DELETEDFORWARDZONE drop primary key ;
+Query OK, 0 rows affected (0.16 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> 
+mysql> alter table DELETEDFORWARDZONE add primary key (id);
+Query OK, 0 rows affected (0.23 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql>
+
+

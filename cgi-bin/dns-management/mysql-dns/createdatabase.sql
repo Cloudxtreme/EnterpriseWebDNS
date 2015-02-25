@@ -76,3 +76,17 @@ create table ZONEINFO
  primary key (domainsuffix)
 );
 
+create table DELETEDFORWARDZONE
+(
+ hostname       varchar(255) not null,
+ domainsuffix   varchar(255) not null,
+ description    varchar(255) not null,
+ username       varchar(20) not null,
+ team           varchar(255) not null,
+ modified       timestamp(14),
+ recorddata     varchar(40) not null,
+ recordclass    varchar(2) not null default 'IN',
+ recordtype     varchar(5) not null default 'A',
+ primary key (hostname)
+);
+

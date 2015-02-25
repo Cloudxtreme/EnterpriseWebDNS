@@ -7,7 +7,7 @@ use DBI;
 use Data::Dumper;
 
 
-my $dbh = DBI->connect('DBI:mysql:DNS','www','www') or die $DBI::errstr ;
+my $dbh = DBI->connect('DBI:mysql:DNS;mysql_socket=/data/db/mysql/mysql.sock','www','www') or die $DBI::errstr ;
 
 my $sql = "select team, displayname from TEAMS order by team;" ;
 

@@ -13,7 +13,7 @@ sub DOSQL
 #get sql query passed to sub
 my $sql = shift ;
 #connect to db
-my $dbh = DBI->connect('DBI:mysql:DNS','www','www');
+my $dbh = DBI->connect('DBI:mysql:DNS;mysql_socket=/data/db/mysql/mysql.sock','www','www');
 #prepare query
 my $sth = $dbh->prepare($sql);
 #run query
@@ -94,14 +94,13 @@ require "cgi-lib.pl" ;
 &ReadParse ;
 
 my $cname = $in{'cname'} ;
-
-
-my $host_name = $in{'host_name'} ;
 my $domainsuffix = $in{'domainsuffix'} ;
+my $targetfqdn = $in{'targetfqdn'} ;
+
 my $description = $in{'description'} ;
 my $username = $in{'username'} ;
 my $team = $in{'team'} ;
-my $teampasswd = $in{'teampasswd'} ;
+my $userpassword = $in{'userpassword'} ;
 
 
 #Start sanity checking
@@ -118,43 +117,46 @@ else
 	$cnamevalid="1";
 	}
 
-#check if team password is correct
-if (length "$teampasswd" == 0)
-	{
-	ERROR("Your team password is null.")
-	}
 
-my $sqlquery = "select teampassword from TEAMS where team = '$team';";
+
+
+my $sqlquery = "select password from USERS where username = '$username';";
 my @sqlresult = DOSQL("$sqlquery");
-my $sqlteampassword = $sqlresult[0];
+my $sqluserpassword = $sqlresult[0];
 
-if ($sqlteampassword ne $teampasswd)
-	{
-	ERROR("Your team password is incorrect - Team is $team , sqlpw is $sqlteampassword.");
-	}
+if ($sqluserpassword ne $userpassword)
+        {
+        ERROR("Your password is incorrect.");
+        }
 #password is correct if this is reached.
 
 
 
 #do lookup in database to check if cname address exists already
-$sqlquery = "select hostname,domainsuffix from FORWARDZONE where (hostname='$host_name') AND (domainsuffix='$domainsuffix'); " ;
+$sqlquery = "select hostname,domainsuffix from FORWARDZONE where (hostname='$cname') AND (domainsuffix='$domainsuffix'); " ;
 my @lookupresult = DOSQL("$sqlquery");
 
 my $lookeduphostname = $lookupresult[0];
 my $lookedupdomainname = $lookupresult[1];
 
-if ("$lookeduphostname.$lookedupdomainname" eq "$host_name.$domainsuffix ")
+if ("$lookeduphostname.$lookedupdomainname" eq "$host_name.$domainsuffix")
 	{
-	EXISTS($host_name,$domainsuffix,$lookeduphostname,$lookedupdomainname);
+	EXISTS($cname,$domainsuffix,$lookeduphostname,$lookedupdomainname);
 	}
 else
 	{
 	#no match so insert new value
-	$sqlquery = "insert into FORWARDZONE (recorddata,recordtype,recordclass,domainsuffix,description,username,team)
-	values ('$host_name','CNAME','IN','$domainsuffix','$description','$username','$team');" ; 
+	$sqlquery = "insert into FORWARDZONE 
+		(hostname,recorddata,recordtype,recordclass,domainsuffix,description,username,team)
+	values  ('$cname','$targetfqdn','CNAME','IN','$domainsuffix','$description','$username','$team');" ; 
 	
 	@lookupresult = DOSQL("$sqlquery");
 	}
+
+#| id | hostname    | domainsuffix            | description          | username | team     | modified            | recorddata               | recordclass | recordtype |
+#+----+-------------+-------------------------+----------------------+----------+----------+---------------------+--------------------------+-------------+------------+
+#| 0  |optiplex     | rainsbrook.pri          | Optiplex in rack     | Andrew   | network  | 2012-09-25 11:21:14 | 192.168.1.1              | IN          | A          |
+#| 1  |www          | andrewstringer.co.uk    | website              | andrew   | server   | 2012-10-16 09:34:57 | quince.rainsbrook.co.uk. | IN          | CNAME      |
 
 
 
@@ -164,28 +166,26 @@ print <<ENDOFTEXT1 ;
 
 <html>
 <head>
-<title>Add CNAME record</title> FIXME
+<title>Add CNAME record</title>
 </head>
 <body>
 
+targetfqdn from form is >$targetfqdn< <br>
+domain suffix from form is >$domainsuffix< <br>
+
+
 <!--$sqlquery<br>-->
 <table id="table">
-<tr><td bgcolor="#eeeeee">$lookeduphostname.$lookedupdomainname</td></tr>
-<tr><td bgcolor="#eeeeee">$host_name.$domainsuffix</td></tr>
-<tr><td bgcolor="#eeeeee">$description</td></tr>
-<tr><td bgcolor="#eeeeee">$username, $team, $teampasswd. </td></tr>
-<tr><td>SQL password result is $sqlteampassword</td></tr>
+<tr><td>CNAME  Domain</td><td bgcolor="#eeeeee">$cname.$domainsuffix</td></tr>
+<tr><td>Target FQDN</td>  <td bgcolor="#eeeeee">$targetfqdn</td></tr>
+<tr><td>Description></td> <td bgcolor="#eeeeee">$description</td></tr>
+<tr><td>Created by</td>   <td bgcolor="#eeeeee">$username, $team. </td></tr>
 
 </table>
 
 </body>
 </html>
 ENDOFTEXT1
-
-#print "$octet1.$octet2.$octet3.$octet4 \n";
-#print "$hostname.$domainsuffix \n";
-#print "$description \n";
-#print "$username, $team, $teampassword \n";
 
 }
 exit (0);

@@ -15,7 +15,7 @@ use Data::Dumper;
 require "globalconfig.pl";
 our ($mysqluser, $mysqlpw);
 
-my $dbh = DBI->connect('DBI:mysql:DNS',"$mysqluser","$mysqlpw") or die $DBI::errstr ;
+my $dbh = DBI->connect('DBI:mysql:DNS;mysql_socket=/data/db/mysql/mysql.sock',"$mysqluser","$mysqlpw") or die $DBI::errstr ;
 
 my $sql ;
 my $sth ;
@@ -62,30 +62,31 @@ while (@teamrow = $sth->fetchrow_array)
         }
 
 #Get valid hostnames to add cname to
-$sql = "select hostname from FORWARDZONE order by hostname;" ;
+
+$sql = "select hostname,domainsuffix from FORWARDZONE order by hostname;" ;
 $sth = $dbh->prepare($sql);
 $sth->execute||die $DBI::errstr;
 
+my $hostname ;
+my $domainsuffix ;
+my @hostname ;
+my @domainsuffix ;
 my $hostrow ;
 my @hostrow ;
-my $hostname ;
-my @hostname ;
 my $hostcounter = 0 ;
+
 while (@hostrow = $sth->fetchrow_array)
 	{
-	$hostname[$hostcounter] = $hostrow[0];
+	$hostname[$hostcounter] = "$hostrow[0].$hostrow[1]";
 	$hostcounter ++
 	}
 
+#Done with db queries, so close connection.
 $sth->finish();
 $dbh->disconnect();
 
 
-
-
-
-
-#print http header
+#Start to print web page out.
 print "Content-type: text/html\n\n";
 
 print <<ENDOFTEXT1 ;
@@ -108,9 +109,12 @@ foreach (@domainname)
 print <<ENDOFTEXT1a ;
 </select>
 
+
+
+
 <br>
-Host name:
-<select name="host_name">
+Target host name:
+<select name="targetfqdn">
 ENDOFTEXT1a
 #select hosts here
 $printcount = 0 ;
@@ -121,18 +125,12 @@ foreach (@hostname)
         }
 print <<ENDOFTEXT2 ;
 </select>
-<b>.</b>
-<select name="domainsuffix" size="1">
 ENDOFTEXT2
-$printcount = 0 ;
-foreach (@domainname)
-        {
-        print "<option>$domainname[$printcount]</option> \n";
-        $printcount ++
-        }
+
+
+
 
 print <<ENDOFTEXT3 ;
-</select>
 <br>
 
 Description of CNAME:-

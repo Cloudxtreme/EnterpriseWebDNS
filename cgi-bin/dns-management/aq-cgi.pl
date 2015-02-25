@@ -78,7 +78,7 @@ $database_host = "127.0.0.1";
 	
 #connect to db
 $db_init_string = qq!dbi:mysql:$database_name:$database_host!;
-$dbh = DBI->connect("$db_init_string", $user, $pass)
+$dbh = DBI->connect("$db_init_string;mysql_socket=/data/db/mysql/mysql.sock", $user, $pass)
 	    || die "Can't connect to $database_name: $DBI::errstr";
 
 

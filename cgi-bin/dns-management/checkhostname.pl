@@ -21,7 +21,7 @@ sub GETSQL
 #get sql query passed to sub
 my $sql = shift ;
 #connect to db
-my $dbh = DBI->connect('DBI:mysql:DNS',"$mysqluser","$mysqlpw");
+my $dbh = DBI->connect('DBI:mysql:DNS;mysql_socket=/data/db/mysql/mysql.sock',"$mysqluser","$mysqlpw");
 #prepare query
 my $sth = $dbh->prepare($sql);
 #run query
@@ -77,6 +77,15 @@ my $domainsuffixquery = $in{'domainsuffix'};
 
 #check host name
 my $hostvalid;
+my $hostnamequerylength = length $hostnamequery;
+
+if ($hostnamequerylength le 1)
+        {
+        $hostvalid="0";
+        ERROR("Did you select a hostname to query?");
+        }
+
+
 $hostnamequery=~tr/A-Z/a-z/ ;
 if ($hostnamequery=~m/[^a-z][^0-9]_/)
         {
@@ -89,6 +98,11 @@ else
         }
 
 
+#Added 17/03/2014 AJS to allow hostname search form to submit query to this program
+if ($domainsuffixquery eq '') {
+#        print "1st option \n";
+        ($hostnamequery, $domainsuffixquery) = split(/\./, $hostnamequery, 2);
+    }
 
 #do lookup in database to check if host_name exists.
 my $sqlquery = "select recorddata,recordclass,recordtype,hostname,domainsuffix,description,username,team,modified from FORWARDZONE 
@@ -130,7 +144,8 @@ if ($hostname && $domainsuffix ne "")
 
 <table id="table">
 <th colspan="2">Hostname exists in the database</th>
-<tr><td>Ipaddress from database</td><td bgcolor="#eeeeee">$recorddata</td></tr>
+<tr><td>Record from database</td><td bgcolor="#eeeeee">$recorddata</td></tr>
+<tr><td>Record type</td><td bgcolor="#eeeeee">$recordtype</td></tr>
 <tr><td>FQDN</td><td bgcolor="#eeeeee">$hostname.$domainsuffix</td></tr>
 <tr><td>Description</td><td bgcolor="#eeeeee">$description</td></tr>
 <tr><td>Created by</td><td bgcolor="#eeeeee">$fullname[0] in $displayname[0] team. </td></tr>
@@ -143,8 +158,9 @@ else
 	{
 print <<ENDOFTEXT3 ;
 <table id="table">
-<th colspan="2">Hostname does not exist in the database</th>
-<tr><td>FQDN</td><td bgcolor="#eeeeee">$hostnamequery.$domainsuffixquery</td></tr>
+<th colspan="2">$hostnamequery.$domainsuffixquery</th>
+<tr><td>You looked up:-</td><td bgcolor="#eeeeee">$hostnamequery.$domainsuffixquery which does not exist in the database.</td></tr>
+<tr><td bgcolor="#eeeeee" colspan="2">Have you tried looking up $hostnamequery with a different domainname?</td></tr>
 </table>
 ENDOFTEXT3
 	}

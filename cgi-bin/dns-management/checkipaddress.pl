@@ -15,7 +15,7 @@ sub GETSQL
 #get sql query passed to sub
 my $sql = shift ;
 #connect to db
-my $dbh = DBI->connect('DBI:mysql:DNS','www','www');
+my $dbh = DBI->connect('DBI:mysql:DNS;mysql_socket=/data/db/mysql/mysql.sock','www','www');
 #prepare query
 my $sth = $dbh->prepare($sql);
 #run query

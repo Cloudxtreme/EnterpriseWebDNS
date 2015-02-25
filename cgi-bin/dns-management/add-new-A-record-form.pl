@@ -15,7 +15,7 @@ use Data::Dumper;
 require "globalconfig.pl";
 our ($mysqluser, $mysqlpw);
 
-my $dbh = DBI->connect('DBI:mysql:DNS',"$mysqluser","$mysqlpw") or die $DBI::errstr ;
+my $dbh = DBI->connect('DBI:mysql:DNS;mysql_socket=/data/db/mysql/mysql.sock',"$mysqluser","$mysqlpw") or die $DBI::errstr ;
 
 #Get valid domain names
 my $sql = "select domainsuffix from DOMAINNAME order by domainsuffix;" ;
